@@ -57,10 +57,23 @@ class Game():
                     game_status[p]["seen"].append(f"{p2} seen at {place} during {game_phase}")
 
 
+    def people_in_room():
+        return [p for p in game_status.keys if game_status[p]["history"][game_phase] == player["place"]]
 
 
-    def advance_state():
+
+
+    def advance_state(player_move):
+        if player_move not in PLACES:
+            return False
+
+        if game_phase >= STATES:
+            return True
+
         update_history()
-
+        update_seen()
+        player["place"] = player_move
 
         game_phase += 1
+
+        return None
