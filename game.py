@@ -22,25 +22,30 @@ class Character:
         self.seen = []
         self.heard = []
 
+    def get_name(self):
+        return self.name
+
     def get_current_place(self):
         return self.history[-1]
 
     def get_place(self, phase):
         return self.history[phase]
 
-    def get_plan(self, phase):
-        return self.plan[phase]
+    def get_plans(self):
+        return self.plan
 
-    def get_seen(self, phase):
-        return self.seen[phase]
+    def get_seen(self):
+        return self.seen
 
-    def get_heard(self, phase):
-        return self.heard[phase]
+    def get_heard(self):
+        return self.heard
     
     def add_heard(self, heard):
         self.heard.append(heard)
 
-
+    def get_history(self):
+        return self.history
+    
     def advance(self, next_phase, seen, place = None):
         if place is None:
             place = self.plan[next_phase]
@@ -63,6 +68,11 @@ class Game():
     def people_in_room(self, room):
         return [c.get_current_place() for c in self.characters.values]
 
+    def get_characters(self):
+        return self.characters
+    
+    def get_player(self):
+        return self.player
 
     def advance(self, player_move):
         t = self.game_phase
