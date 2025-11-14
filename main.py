@@ -1,6 +1,8 @@
 import pygame
 import sys
 from game import Game
+from ui_room import Room
+from ui_button import Button
 
 
 game = Game()
@@ -37,6 +39,19 @@ def render_text(text, font, color, pos):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, pos)
 
+active_clicked_room = -1
+rooms = [
+    Room(0, (600, 100)),
+    Room(1, (900, 100)),
+    Room(2, (750, 400))
+]
+
+def greet(name: str):
+    print(f"Hello {name}!")
+
+# Create button
+button = Button(window_pos=(50, 50), size=(150, 50), on_click_function=greet)
+
 # Main game loop
 running = True
 while running:
@@ -52,6 +67,9 @@ while running:
                 active = True
             else:
                 active = False
+            for room in rooms:
+                if room.is_inside_bounds(event.pos):
+                    active_clicked_room = room.room_id
 
         if event.type == pygame.KEYDOWN:
             if active:
@@ -62,6 +80,7 @@ while running:
                     text = text[:-1]
                 else:
                     text += event.unicode
+        button.handle_event(event, "World!")
 
     # Draw the input box
     pygame.draw.rect(screen, BLACK, input_box, 2)
@@ -72,6 +91,11 @@ while running:
 
     # Display the input text above the box
     render_text("You typed: " + text, font, BLACK, (input_box.x, input_box.y - 40))
+
+    for room in rooms:
+        room.render(screen, active_clicked_room == room.room_id)
+
+    button.draw(screen, pygame.mouse.get_pos())
 
     pygame.display.flip()
 
