@@ -57,7 +57,6 @@ while running:
             if active:
                 if event.key == pygame.K_RETURN:
                     text = ""
-                    print(game.game_status)
                     pass  # Do nothing on return key (or you could process the text here)
                 elif event.key == pygame.K_BACKSPACE:
                     text = text[:-1]

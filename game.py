@@ -8,72 +8,73 @@ PLACES = [
 
 STATES = 3
 
-PLAYERS = [
+PLAYER_NAMES = [
     "alice", "bob", "carol", "dave"
 ]
-
-
-
 def get_start_plan():
     return [random.choice(PLACES) for i in range(STATES)]
 
-def generate_player():
-    return {
-        "history": [],
-        "plan": get_start_plan(),
-        "seen": [],
-        "heard": []
-    }
+class Character:
+    def __init__(self, name):
+        self.name = name
+        self.history = []
+        self.plan = [random.choice(PLACES) for i in range(STATES)]
+        self.seen = []
+        self.heard = []
 
+    def get_current_place(self):
+        return self.history[-1]
 
-class Game():    
+    def get_place(self, phase):
+        return self.history[phase]
 
+    def get_plan(self, phase):
+        return self.plan[phase]
 
+    def get_seen(self, phase):
+        return self.seen[phase]
 
-    game_phase = 0
-    game_status = { player: generate_player() for player in PLAYERS}
+    def get_heard(self, phase):
+        return self.heard[phase]
     
+    def add_heard(self, heard):
+        self.heard.append(heard)
 
 
-    player = {
-        "place": random.choice(PLACES),
-        "target": None
-    }
+    def advance(self, next_phase, seen, place = None):
+        if place is None:
+            place = self.plan[next_phase]
 
-
-
-
-    def update_history():
-        for person in game_status.keys:
-            game_status[person]["history"].append(game_status[person]["plan"][game_phase])
-
-
-    def update_seen():
-        for place in PLACES:
-            people_there = [p for p in game_status.keys if game_status[p]["history"][game_phase] == place]
-
-            for p in people_there:
-                for p2 in people_there:
-                    game_status[p]["seen"].append(f"{p2} seen at {place} during {game_phase}")
-
-
-    def people_in_room():
-        return [p for p in game_status.keys if game_status[p]["history"][game_phase] == player["place"]]
+        self.history.append(place)
+        self.seen.append(seen)
 
 
 
+class Game():
 
-    def advance_state(player_move):
-        if player_move not in PLACES:
-            return False
+    def __init__(self):
+        self.characters = {name: Character(name) for name in PLAYER_NAMES}
+        self.player = Character("player")
+        self.characters["player"] = self.player
+        self.target = None
 
-        if game_phase >= STATES:
-            return True
+        self.game_phase = 0
 
-        update_history()
-        update_seen()
-        player["place"] = player_move
+    def people_in_room(self, room):
+        return [c.get_current_place() for c in self.characters.values]
 
-        game_phase += 1
 
-        return None
+    def advance(self, player_move):
+        t = self.game_phase
+        for c in self.characters.values:
+            seen = [character.get_current_place() for character in self.characters.values]
+
+            if c == self.player:
+                c.advance(t + 1, seen, player_move)
+            else:
+                c.advance(t+1, seen)
+        self.game_phase += 1
+
+
+
+
