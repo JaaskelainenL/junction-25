@@ -14,19 +14,72 @@ from ai import Conversation
 WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
 
-
-class GameWindow:
-    def __init__(self):
-        self.game = Game()
-        pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Epic murder mystery game")
-
-        self.conversations = {}
-
-
+class IWindow:
+    def __init__(self, screen: pygame.Surface):
+        self.screen = screen
         self.block_interaction = False
         self.is_waiting = False
+        self.speech_queue: Queue[SpeechBubble] = Queue()
+        self.active_speech: SpeechBubble | None = None
+
+    def add_speech_to_queue(self, character_name: str, text: str):
+        speech = SpeechBubble(character_name, text)
+        self.speech_queue.put(speech)
+    
+    def handle_speech(self):
+        if not self.speech_queue.empty():
+            if self.active_speech == None:
+                self.active_speech = self.speech_queue.get()
+
+        if self.active_speech != None:
+            self.active_speech.update()
+            if self.active_speech.is_done():
+                self.active_speech = None
+                self.block_interaction = False
+            else:
+                self.block_interaction = True
+
+    def draw_all(self):
+        pass # override
+
+    def handle_standard_events(self, event):
+        pass # override
+
+    def get_llm_response_async(self, conversation: Conversation, message: str, callback):
+        def worker():
+            self.is_waiting = True # lock mutex
+            response = conversation.send_message(message)
+            callback(response)
+            self.is_waiting = False
+        thread = threading.Thread(target=worker)
+        thread.start()
+
+    def main_loop(self):
+        running = True
+        while running:
+            #if self.game.game_phase >= STATES:
+            #    self.block_interaction = True TODO change to detective window
+            self.screen.fill(BG_COLOR)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                # interaction is blocked when speech bubble is shown
+                if not self.block_interaction and not self.is_waiting:
+                    self.handle_standard_events(event)
+
+            self.handle_speech()
+            self.draw_all()
+
+        # end of game loop
+        pygame.quit()
+
+class GameWindow(IWindow):
+    def __init__(self, screen: pygame.Surface):
+        IWindow.__init__(self, screen)
+        self.game = Game()
+        self.conversations = {}
         self.active_clicked_character = ""
         self.active_clicked_room = ""
         self.rooms = [
@@ -34,8 +87,6 @@ class GameWindow:
             RoomGUI(self.game.get_place(1), (900, 100)),
             RoomGUI(self.game.get_place(2), (750, 400))
         ]
-        self.speech_queue: Queue[SpeechBubble] = Queue()
-        self.active_speech: SpeechBubble | None = None
         self.init_gui_components()
 
     def update_people_in_all_rooms(self):
@@ -59,28 +110,16 @@ class GameWindow:
         self.update_people_in_all_rooms()
         self.phase_clock.set_time(self.game.get_time())
 
-    def get_llm_response_async(self, conversation: Conversation, message: str, callback):
-        def worker():
-            self.is_waiting = True # lock mutex
-            response = conversation.send_message(message)
-            callback(response)
-            self.is_waiting = False
-        thread = threading.Thread(target=worker)
-        thread.start()
-
     # This function is called every time "submit prompt" button is pressed
     def on_prompt_submit(self, input_field: TextInput):
         message = input_field.get_text()
         talking_to = self.active_clicked_character
-
-
         if not talking_to or not message or talking_to == PLAYER_NAME:
             return        
         
         # Check if we are in the same room
         if self.game.characters[talking_to].get_current_place() != self.game.player.get_current_place():
             return
-
         if talking_to not in self.conversations:
             self.conversations[talking_to] = Conversation(self.game.player, self.game.characters[talking_to], self.game.game_phase)
 
@@ -102,10 +141,6 @@ class GameWindow:
                 print(f"{character.get_name()} alive: {character.is_alive()}")
 
         self.set_clicked_character("")
-
-    def add_speech_to_queue(self, character_name: str, text: str):
-        speech = SpeechBubble(character_name, text)
-        self.speech_queue.put(speech)
 
     def init_gui_components(self):
         self.advance_button = Button(window_pos=(50, 50), size=(150, 50), text="Advance turn", on_click_function=self.advance_turn)
@@ -166,42 +201,27 @@ class GameWindow:
         self.submit_prompt.handle_event(event, self.prompt_input)
         self.kill_button.handle_event(event)
 
-    def handle_speech(self):
-        if not self.speech_queue.empty():
-            if self.active_speech == None:
-                self.active_speech = self.speech_queue.get()
+class DetectiveWindow(IWindow):
 
-        if self.active_speech != None:
-            self.active_speech.update()
-            if self.active_speech.is_done():
-                self.active_speech = None
-                self.block_interaction = False
-            else:
-                self.block_interaction = True
+    def __init__(self, screen: pygame.Surface, game: Game):
+        self.game = game
+        self.screen = screen
 
-    def main_loop(self):
-        running = True
-        while running:
-            if self.game.game_phase >= STATES:
-                self.block_interaction = True
-            self.screen.fill(BG_COLOR)
+    def draw_all(self):
+        if (self.active_speech != None):
+            self.active_speech.draw(self.screen)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+        pygame.display.flip()
 
-                # interaction is blocked when speech bubble is shown
-                if not self.block_interaction and not self.is_waiting:
-                    self.handle_standard_events(event)
-
-            self.handle_speech()
-            self.draw_all()
-
-        # end of game loop
-        pygame.quit()
+    def handle_standard_events(self, event):
+        pass
 
 # ================ MAIN FUNC ==================
-window = GameWindow()
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Epic murder mystery game")
+
+window = GameWindow(screen)
 window.main_loop()
 sys.exit()
 # =============================================
