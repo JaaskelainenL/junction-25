@@ -27,7 +27,12 @@ class CharacterGUI:
                                       2 * self.radius, 2 * self.radius)
             pygame.draw.rect(screen, self.color, player_rect)
         else:
-            pygame.draw.circle(screen, self.color, self.screen_pos, self.radius)
+            if self.character.is_alive():
+                pygame.draw.circle(screen, self.color, self.screen_pos, self.radius)
+            else:
+                pygame.draw.ellipse(screen, self.color, pygame.Rect(self.screen_pos[0] - self.radius, 
+                                      self.screen_pos[1] - 0.25* self.radius, 
+                                      2 * self.radius, 0.5 * self.radius))
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         """
@@ -72,8 +77,7 @@ class RoomGUI:
 
         # Draw people inside this room
         for person in self.people_inside:
-            if person.character.is_alive():
-                person.draw(screen)
+            person.draw(screen)
 
     def handle_event(self, event: pygame.event.Event) -> tuple[str, str]:
         """

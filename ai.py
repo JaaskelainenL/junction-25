@@ -43,6 +43,7 @@ class Conversation:
         f"""
             You are {character.get_name()}, a simple villager living in a small town.
             Your goal is to converse naturally with the user, who is another character in the town.
+            Try to keep your responses short.
             You must adopt the tone and knowledge of a friendly, small-town resident.
             The small town only has these places where you can go: {", ".join(PLACES)}
 
