@@ -110,32 +110,28 @@ DETECTIVE_FINAL_INSTRUCTION = """
     """
 
 class DetectiveConversation:
-    def __init__(self, character):
+    def __init__(self, character, victim):
         self.character = character
 
         self.question_limit = 10
         self.chat = client.chats.create(model="gemini-2.5-flash", config={"system_instruction": 
         f"""
-            You are Detective Prime, an elite investigative AI tasked with solving a fictional murder case. A homicide has occurred, and there is a defined list of suspects.
-            Your mission is to identify the killer using strategic questioning.
-            Begin by analyzing the known facts of the murder.
-            Evaluate all suspects and form preliminary hypotheses.
-            Decide which suspects to interrogate based on logical leads and inconsistencies.
-            You may ask only a limited number of questions in total.
-            Each question must be:
-            - Highly targeted
-            - Evidence-driven
-            - Designed to uncover contradictions, motives, alibis, or hidden information
-            After each answer, reassess your strategy and update your working theory.
-            Prioritize questions that close knowledge gaps or test suspect statements.
-            Keep a clear list of facts, clues, contradictions, and suspect profiles.
-            Make deductions explicitly and logically.
-            Avoid assumptions not grounded in provided evidence.
-            When confident, identify the most likely culprit.
-            Provide a clear explanation of your reasoning and the evidence that led to your conclusion.
-            You have {self.question_limit} questions to solve the murder, use them wisely.
-        """
+            You are a detective solving a murder mystery in a small town.
+            A villager has been murdered and you must solve who did it!
+            The victim was {victim}.
+            Your goal is to converse naturally with the user, who is another character in the town.
+            It could've been anyone living in the town.
+            The small town only has these places where you can go: {", ".join(PLACES)}
+            You will interrogate each town member seperately.
+            Ask around {self.question_limit} questions in total for each person and end the conversation by saying "ok, i am done here" when you feel like you have gotten everything out of the person or the person wants to stop.
+
+            You are now talking to {character.get_name()}. Start asking questions.
+            """
         })
+
+    def change_character(self, character):
+        self.character = character
+        self.chat.send_message(f"You are now talking to {character.get_name()}. Start asking questions.")
 
     def send_message(self, user_input):
         return self.chat.send_message(user_input)
