@@ -98,7 +98,7 @@ class GameWindow:
             character = self.game.get_characters()[self.active_clicked_character]
             player = self.game.get_characters()[PLAYER_NAME]
             if character.get_current_place() == player.get_current_place():
-                character.kill()
+                self.game.kill_character(character)
                 print(f"{character.get_name()} alive: {character.is_alive()}")
 
         self.set_clicked_character("")
