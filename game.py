@@ -51,11 +51,11 @@ class Character:
     
     def add_heard(self, heard):
         self.heard.append(heard)
-        self.heard = list(set(self.heard))
+        # self.heard = list(set(self.heard))
     
     def add_seen(self, seen_msg):
         self.seen.append(seen_msg)
-        self.seen = list(set(self.seen))
+        # self.seen = list(set(self.seen))
 
     def get_history(self):
         return self.history
