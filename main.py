@@ -46,9 +46,10 @@ class GameWindow:
     # This function is called every time "submit prompt" button is pressed
     def on_prompt_submit(self, input_field: TextInput):
         message = input_field.get_text()
+        talking_to = self.active_clicked_character
         print(f"Input: {message}")
         self.add_speech_to_queue(PLAYERNAME, message)
-        self.add_speech_to_queue("Bob", "Test response lorem ipsum")
+        self.add_speech_to_queue(talking_to, "Test response lorem ipsum")
         # TODO
         input_field.clear()
 
@@ -58,6 +59,7 @@ class GameWindow:
             player = self.game.get_characters()[PLAYERNAME]
             if character.get_current_place() == player.get_current_place():
                 character.kill()
+                print(f"{character.get_name()} alive: {character.is_alive()}")
 
     def add_speech_to_queue(self, character_name: str, text: str):
         speech = SpeechBubble(character_name, text)
@@ -69,7 +71,7 @@ class GameWindow:
         self.submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=self.game.get_time())
         self.character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
-        self.kill_button = Button(window_pos=(600, 50), size=(100, 50), text="Kill", on_click_function=self.on_kill)
+        self.kill_button = Button(window_pos=(800, 50), size=(100, 50), text="Kill", on_click_function=self.on_kill)
         # seen before first advance
         self.update_people_in_all_rooms()
 
@@ -97,9 +99,9 @@ class GameWindow:
             (clicked_room, clicked_character) = room.handle_event(event)
 
             if clicked_character != "":
-                active_clicked_character = clicked_character
-                self.character_selection_text.set_text(f"Selected character: {active_clicked_character}")
-                self.kill_button.text_area.set_text(f"Kill {active_clicked_character}")
+                self.active_clicked_character = clicked_character
+                self.character_selection_text.set_text(f"Selected character: {self.active_clicked_character}")
+                self.kill_button.text_area.set_text(f"Kill {self.active_clicked_character}")
 
             if clicked_room != "":
                 self.active_clicked_room = clicked_room
