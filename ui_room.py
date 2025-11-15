@@ -12,7 +12,7 @@ class Room:
         self.room_id = room_id
         self.window_pos = window_pos
 
-    def render(self, screen: pygame.Surface, highlight: bool):
+    def draw(self, screen: pygame.Surface, highlight: bool):
         room_box = pygame.Rect(self.window_pos[0], self.window_pos[1], self.size[0], self.size[1])
         if highlight:
             highlight_box = pygame.Rect(

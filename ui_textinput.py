@@ -1,5 +1,6 @@
 import pygame
 import time
+from ui_textarea import TextArea
 
 class TextInput:
     """
@@ -15,12 +16,10 @@ class TextInput:
     def __init__(self, window_pos: tuple[int, int], size: tuple[int, int]):
         self.window_pos = window_pos
         self.size = size
-        self.text = ""
         self.focused = False
         self._last_caret_switch = time.time()
         self._caret_visible = True
-        # Must be set in ctor because must be called after pygame init
-        self.font: pygame.font.Font = pygame.font.Font(None, 32)
+        self.text_area = TextArea(window_pos, size, "")
 
     def draw(self, screen: pygame.Surface, mouse_pos: tuple[int, int]):
         """
@@ -37,9 +36,8 @@ class TextInput:
         else:
             pygame.draw.rect(screen, self.border_color, rect, self.border_width)
 
-        # Render the text
-        text_surface = self.font.render(self.text, True, self.text_color)
-        screen.blit(text_surface, (self.window_pos[0] + 5, self.window_pos[1] + 5))
+        # Render underlying text area
+        self.text_area.draw(screen)
 
         # Draw blinking caret
         if self.focused:
@@ -48,11 +46,12 @@ class TextInput:
                 self._caret_visible = not self._caret_visible
                 self._last_caret_switch = now
 
+            caret_pos = self.text_area.get_caret_position()
             if self._caret_visible:
-                caret_x = self.window_pos[0] + 5 + text_surface.get_width()
-                caret_y = self.window_pos[1] + 5
-                caret_h = text_surface.get_height()
-                pygame.draw.line(screen, self.text_color, (caret_x, caret_y), (caret_x, caret_y + caret_h), 2)
+                pygame.draw.line(screen, self.text_color, 
+                                 (caret_pos[0], caret_pos[1]), 
+                                 (caret_pos[0], caret_pos[1] + caret_pos[2]), 
+                                 2)
 
     def handle_event(self, event: pygame.event.Event):
         """
@@ -67,22 +66,22 @@ class TextInput:
         if event.type == pygame.KEYDOWN and self.focused:
             # Backspace
             if event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
+                self.text_area.text = self.text_area.text[:-1]
 
             # Regular character input
             elif event.key == pygame.K_RETURN:
                 pass  # You can ignore or handle Enter differently if desired
             else:
-                self.text += event.unicode
+                self.text_area.text += event.unicode
 
     def get_text(self) -> str:
         """
         Returns the current text inside the field.
         """
-        return self.text
+        return self.text_area.text
 
     def clear(self):
         """
         Clears the text content.
         """
-        self.text = ""
+        self.text_area.text = ""
