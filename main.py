@@ -3,14 +3,9 @@ import sys
 from game import Game
 from ui_room import Room
 from ui_button import Button
-
+from ui_textinput import TextInput
 
 game = Game()
-
-
-
-
-
 
 # Initialize Pygame
 pygame.init()
@@ -25,20 +20,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 
-# Fonts
-font = pygame.font.Font(None, 32)
-input_font = pygame.font.Font(None, 28)
-
-# Text Input
-input_box = pygame.Rect(100, 200, 300, 40)
-text = ""
-active = False
-
-# Function to render text
-def render_text(text, font, color, pos):
-    text_surface = font.render(text, True, color)
-    screen.blit(text_surface, pos)
-
 active_clicked_room = -1
 rooms = [
     Room(0, (600, 100)),
@@ -49,8 +30,17 @@ rooms = [
 def greet(name: str):
     print(f"Hello {name}!")
 
+# This function is called every time "submit prompt" button is pressed
+def on_prompt_submit(input_field: TextInput):
+    print(f"Input: {input_field.get_text()}")
+    input_field.clear()
+
+
 # Create button
 button = Button(window_pos=(50, 50), size=(150, 50), on_click_function=greet)
+
+prompt_input = TextInput(window_pos=(50, 150), size=(300,250))
+submit_prompt = Button(window_pos=(50, 500), size=(100,50), on_click_function=on_prompt_submit)
 
 # Main game loop
 running = True
@@ -61,41 +51,23 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Handle input box events
+        # Change active room selection
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if input_box.collidepoint(event.pos):
-                active = True
-            else:
-                active = False
             for room in rooms:
                 if room.is_inside_bounds(event.pos):
                     active_clicked_room = room.room_id
 
-        if event.type == pygame.KEYDOWN:
-            if active:
-                if event.key == pygame.K_RETURN:
-                    text = ""
-                    pass  # Do nothing on return key (or you could process the text here)
-                elif event.key == pygame.K_BACKSPACE:
-                    text = text[:-1]
-                else:
-                    text += event.unicode
         button.handle_event(event, "World!")
-
-    # Draw the input box
-    pygame.draw.rect(screen, BLACK, input_box, 2)
-    pygame.draw.rect(screen, GRAY, input_box.inflate(-2, -2))  # Inner fill
-
-    # Render the inputted text
-    render_text(text, input_font, BLACK, (input_box.x + 5, input_box.y + 5))
-
-    # Display the input text above the box
-    render_text("You typed: " + text, font, BLACK, (input_box.x, input_box.y - 40))
+        prompt_input.handle_event(event)
+        submit_prompt.handle_event(event, prompt_input)
 
     for room in rooms:
         room.render(screen, active_clicked_room == room.room_id)
 
-    button.draw(screen, pygame.mouse.get_pos())
+    mouse_pos = pygame.mouse.get_pos()
+    button.draw(screen, mouse_pos)
+    prompt_input.draw(screen, mouse_pos)
+    submit_prompt.draw(screen, mouse_pos)
 
     pygame.display.flip()
 
