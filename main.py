@@ -1,10 +1,11 @@
 import pygame
 import sys
 from game import Game
-from ui_room import Room
+from ui_room import Room as RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
 from ui_textarea import TextArea
+from ui_clock import Clock as ClockGUI
 
 game = Game()
 
@@ -20,14 +21,15 @@ BG_COLOR = (255, 255, 255)
 
 active_clicked_room = -1
 rooms = [
-    Room(0, (600, 100)),
-    Room(1, (900, 100)),
-    Room(2, (750, 400))
+    RoomGUI(0, (600, 100)),
+    RoomGUI(1, (900, 100)),
+    RoomGUI(2, (750, 400))
 ]
 
 def advance_turn(selected_room: int):
-    # TODO
     print(f"Moving to room {selected_room}!")
+    # TODO
+    phase_clock.set_time(game.get_time())
 
 # This function is called every time "submit prompt" button is pressed
 def on_prompt_submit(input_field: TextInput):
@@ -35,12 +37,10 @@ def on_prompt_submit(input_field: TextInput):
     # TODO
     input_field.clear()
 
-
-# Create button
 advance_button = Button(window_pos=(50, 50), size=(150, 50), text="Advance turn", on_click_function=advance_turn)
-
 prompt_input = TextInput(window_pos=(50, 150), size=(300,250))
 submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=on_prompt_submit)
+phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=game.get_time())
 
 # Main game loop
 running = True
@@ -70,6 +70,7 @@ while running:
     advance_button.draw(screen, mouse_pos)
     prompt_input.draw(screen, mouse_pos)
     submit_prompt.draw(screen, mouse_pos)
+    phase_clock.draw(screen)
 
     pygame.display.flip()
 
