@@ -126,8 +126,6 @@ class DetectiveConversation:
             The small town only has these places where you can go: {", ".join(PLACES)}
             You will interrogate each town member seperately.
             Ask around {self.question_limit} questions in total for each person and end the conversation by saying "ok, i am done here" when you feel like you have gotten everything out of the person or the person wants to stop.
-
-            You are now talking to {character.get_name()}. Start asking questions.
             """
         })
 
