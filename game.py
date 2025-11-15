@@ -111,11 +111,12 @@ class Game():
             print(f"{c.get_name()} has heard: {c.heard}")
 
         for c in self.characters.values():
-            if c == self.player:
+            if c.is_alive():
+                if c == self.player:
                     c.advance(t + 1, seen, player_move)
-            else:
-                # randomly pick seen/heard to tell others
-                c.advance(t+1, seen)
+                else:
+                    # randomly pick seen/heard to tell others
+                    c.advance(t+1, seen)
         self.game_phase += 1
 
 

@@ -73,8 +73,13 @@ class GameWindow:
         message = input_field.get_text()
         talking_to = self.active_clicked_character
 
+
         if not talking_to or not message:
             return        
+        
+        # Check if we are in the same room
+        if self.game.characters[talking_to].get_current_place() != self.game.player.get_current_place():
+            return
 
         if talking_to not in self.conversations:
             self.conversations[talking_to] = Conversation(self.game.player, self.game.characters[talking_to], self.game.game_phase)
