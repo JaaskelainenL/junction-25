@@ -1,12 +1,13 @@
 import pygame
 import sys
-import random
+from queue import Queue
 from game import Game
 from ui_room import RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
 from ui_textarea import TextArea
 from ui_clock import Clock as ClockGUI
+from ui_speech import SpeechBubble
 
 WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
@@ -18,6 +19,7 @@ class GameWindow:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Epic murder mystery game")
 
+        self.block_interaction = False
         self.active_clicked_character = ""
         self.active_clicked_room = ""
         self.rooms = [
@@ -25,6 +27,8 @@ class GameWindow:
             RoomGUI(self.game.get_place(1), (900, 100)),
             RoomGUI(self.game.get_place(2), (750, 400))
         ]
+        self.speech_queue: Queue[SpeechBubble] = Queue()
+        self.active_speech: SpeechBubble | None = None
         self.init_gui_components()
 
     def update_people_in_all_rooms(self):
@@ -39,9 +43,16 @@ class GameWindow:
 
     # This function is called every time "submit prompt" button is pressed
     def on_prompt_submit(self, input_field: TextInput):
-        print(f"Input: {input_field.get_text()}")
+        message = input_field.get_text()
+        print(f"Input: {message}")
+        self.add_speech_to_queue("Player", message)
+        self.add_speech_to_queue("Test", "Test response lorem ipsum")
         # TODO
         input_field.clear()
+
+    def add_speech_to_queue(self, character_name: str, text: str):
+        speech = SpeechBubble(character_name, text)
+        self.speech_queue.put(speech)
 
     def init_gui_components(self):
         self.advance_button = Button(window_pos=(50, 50), size=(150, 50), text="Advance turn", on_click_function=self.advance_turn)
@@ -52,6 +63,53 @@ class GameWindow:
         # seen before first advance
         self.update_people_in_all_rooms()
 
+    def draw_all(self):
+        for room in self.rooms:
+            room.draw(self.screen, self.active_clicked_room == room.room_name)
+
+        mouse_pos = pygame.mouse.get_pos()
+        # Draw rest of UI components
+        self.advance_button.draw(self.screen, mouse_pos)
+        self.prompt_input.draw(self.screen, mouse_pos)
+        self.submit_prompt.draw(self.screen, mouse_pos)
+        self.phase_clock.draw(self.screen)
+        self.character_selection_text.draw(self.screen)
+
+        if (self.active_speech != None):
+            self.active_speech.draw(self.screen)
+
+        pygame.display.flip()
+
+    def handle_standard_events(self, event):
+        # Change active room and character selection
+        for room in self.rooms:
+            (clicked_room, clicked_character) = room.handle_event(event)
+
+            if clicked_character != "":
+                active_clicked_character = clicked_character
+                self.character_selection_text.set_text(f"Selected character: {active_clicked_character}")
+
+            if clicked_room != "":
+                self.active_clicked_room = clicked_room
+
+        # Rest of components
+        self.advance_button.handle_event(event, self.active_clicked_room)
+        self.prompt_input.handle_event(event)
+        self.submit_prompt.handle_event(event, self.prompt_input)
+
+    def handle_speech(self):
+        if not self.speech_queue.empty():
+            if self.active_speech == None:
+                self.active_speech = self.speech_queue.get()
+
+        if self.active_speech != None:
+            self.active_speech.update()
+            if self.active_speech.is_done():
+                self.active_speech = None
+                self.block_interaction = False
+            else:
+                self.block_interaction = True
+
     def main_loop(self):
         running = True
         while running:
@@ -61,34 +119,12 @@ class GameWindow:
                 if event.type == pygame.QUIT:
                     running = False
 
-                # Change active room and character selection
-                for room in self.rooms:
-                    (clicked_room, clicked_character) = room.handle_event(event)
+                # interaction is blocked when speech bubble is shown
+                if not self.block_interaction:
+                    self.handle_standard_events(event)
 
-                    if clicked_character != "":
-                        active_clicked_character = clicked_character
-                        self.character_selection_text.set_text(f"Selected character: {active_clicked_character}")
-
-                    if clicked_room != "":
-                        self.active_clicked_room = clicked_room
-
-                # Pass event handler to components
-                self.advance_button.handle_event(event, self.active_clicked_room)
-                self.prompt_input.handle_event(event)
-                self.submit_prompt.handle_event(event, self.prompt_input)
-
-            for room in self.rooms:
-                room.draw(self.screen, self.active_clicked_room == room.room_name)
-
-            mouse_pos = pygame.mouse.get_pos()
-            # Draw rest of UI components
-            self.advance_button.draw(self.screen, mouse_pos)
-            self.prompt_input.draw(self.screen, mouse_pos)
-            self.submit_prompt.draw(self.screen, mouse_pos)
-            self.phase_clock.draw(self.screen)
-            self.character_selection_text.draw(self.screen)
-
-            pygame.display.flip()
+            self.handle_speech()
+            self.draw_all()
 
         # end of game loop
         pygame.quit()
