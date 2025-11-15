@@ -109,11 +109,13 @@ DETECTIVE_FINAL_INSTRUCTION = """
     Be concise and focus only on information conveyed by the user.
     """
 
+MAX_QUESTIONS = 10
+
 class DetectiveConversation:
     def __init__(self, character, victim):
         self.character = character
 
-        self.question_limit = 10
+        self.question_limit = MAX_QUESTIONS
         self.chat = client.chats.create(model="gemini-2.5-flash", config={"system_instruction": 
         f"""
             You are a detective solving a murder mystery in a small town.
@@ -130,10 +132,12 @@ class DetectiveConversation:
         })
 
     def change_character(self, character):
+        self.question_limit = MAX_QUESTIONS
         self.character = character
         self.chat.send_message(f"You are now talking to {character.get_name()}. Start asking questions.")
 
     def send_message(self, user_input):
+        self.question_limit -= 1
         return self.chat.send_message(user_input)
 
     
