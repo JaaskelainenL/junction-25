@@ -2,12 +2,14 @@ import pygame
 import random
 from math import sqrt
 from game import Character
+from ui_textarea import TextArea
 
 SHOW_ALL_CHARACTERS = True
 
 class CharacterGUI:
     def __init__(self, character: Character, room_window_pos: tuple[int, int], room_size: tuple[int, int]):
         # new random instance with name as seed, so color and pos are always same
+        self.character = character
         self.character_name = character.get_name()
         rng = random.Random(self.character_name)
         self.color = rng.choices(range(256), k=3)
@@ -58,6 +60,7 @@ class RoomGUI:
         self.room_name = room_name
         self.window_pos = window_pos
         self.people_inside = []
+        self.label = TextArea(window_pos, self.size, room_name)
 
     def draw(self, screen: pygame.Surface, highlight: bool):
         room_box = pygame.Rect(self.window_pos[0], self.window_pos[1], self.size[0], self.size[1])
@@ -65,9 +68,12 @@ class RoomGUI:
         if highlight:
             pygame.draw.rect(screen, self.highlight_color, room_box, self.highlight_offset)
 
+        self.label.draw(screen)
+
         # Draw people inside this room
         for person in self.people_inside:
-            person.draw(screen)
+            if person.character.is_alive():
+                person.draw(screen)
 
     def handle_event(self, event: pygame.event.Event) -> tuple[str, str]:
         """

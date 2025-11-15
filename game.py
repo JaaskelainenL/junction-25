@@ -59,7 +59,11 @@ class Character:
     
     def advance(self, next_phase, seen, place = None):
         if place is None:
-            place = self.plan.pop(0)
+            if self.plan:
+                place = self.plan.pop(0)
+            else:
+                place = self.get_current_place()
+                
 
         self.add_seen(f"{seen} in {self.get_current_place()} at {PHASE_LOOKUP[next_phase-1]}")
         self.history.append(place)
@@ -86,12 +90,14 @@ class Game():
         return self.player
 
     def get_time(self):
-        return PHASE_LOOKUP[self.game_phase]
+        return PHASE_LOOKUP[min(STATES-1,self.game_phase)]
     
     def get_place(self, index):
         return PLACES[index]
 
     def advance(self, player_move):
+        if self.game_phase >= STATES:
+            return
         t = self.game_phase
         for c in self.characters.values():
             if c.is_alive():
