@@ -46,7 +46,7 @@ class GameWindow:
         message = input_field.get_text()
         print(f"Input: {message}")
         self.add_speech_to_queue("Player", message)
-        self.add_speech_to_queue("Test", "Test response lorem ipsum")
+        self.add_speech_to_queue("Bob", "Test response lorem ipsum")
         # TODO
         input_field.clear()
 

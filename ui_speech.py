@@ -2,6 +2,9 @@ import pygame
 import time
 from ui_textarea import TextArea
 
+LETTER_REVEAL_DELAY = 0.05
+REMAIN_AFTER_FINISH = 3
+
 class SpeechBubble:
     bg_color: tuple[int, int, int] = (140, 140, 160)
 
@@ -38,9 +41,9 @@ class SpeechBubble:
     def update(self) -> bool:
         now = time.time()
         if not self.done:
-            if not self.all_written and now - self.last_revealed > 0.05:
+            if not self.all_written and now - self.last_revealed > LETTER_REVEAL_DELAY:
                 self.reveal_letter(now)
-            if self.all_written and now - self.last_revealed > 3:
+            if self.all_written and now - self.last_revealed > REMAIN_AFTER_FINISH:
                 self.done = True
         return self.done
     

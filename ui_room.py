@@ -3,6 +3,8 @@ import random
 from math import sqrt
 from game import Character
 
+SHOW_ALL_CHARACTERS = True
+
 class CharacterGUI:
     def __init__(self, character: Character, room_window_pos: tuple[int, int], room_size: tuple[int, int]):
         # new random instance with name as seed, so color and pos are always same
@@ -17,7 +19,13 @@ class CharacterGUI:
         self.radius = 20
 
     def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, self.color, self.screen_pos, self.radius)
+        if self.character_name == "player":
+            player_rect = pygame.Rect(self.screen_pos[0] - self.radius, 
+                                      self.screen_pos[1] - self.radius, 
+                                      2 * self.radius, 2 * self.radius)
+            pygame.draw.rect(screen, self.color, player_rect)
+        else:
+            pygame.draw.circle(screen, self.color, self.screen_pos, self.radius)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         """
@@ -78,9 +86,12 @@ class RoomGUI:
     
     def update(self, people_inside: list[Character]):
         """
-        Update people in this room. CharacterGUI wrappers are made from them
+        Update people in this room. CharacterGUI wrappers are made from them. People inside is set to empty list
+        if SHOW_ALL_CHARACTERS=False and player is not in the room
         """
-        self.people_inside = [CharacterGUI(c, self.window_pos, self.size) for c in people_inside]
+        is_player_inside = len([c for c in people_inside if c.get_name() == "player"]) > 0
+        if SHOW_ALL_CHARACTERS or is_player_inside:
+            self.people_inside = [CharacterGUI(c, self.window_pos, self.size) for c in people_inside]
 
     def is_inside_bounds(self, position: tuple[int, int]) -> bool:
         return ((self.window_pos[0] < position[0] < self.window_pos[0] + self.size[0])
