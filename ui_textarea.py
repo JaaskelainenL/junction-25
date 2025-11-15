@@ -21,7 +21,7 @@ class TextArea:
         Draw the rectangle and the wrapped text inside it.
         """
         # Wrap text to fit width
-        words = self.text.split(" ")
+        words = self.text.split(None)
         lines = []
         current_line = ""
 
