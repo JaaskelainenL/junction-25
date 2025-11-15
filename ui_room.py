@@ -46,8 +46,8 @@ class RoomGUI:
     highlight_offset = 10
     highlight_color = (150, 0, 150)
 
-    def __init__(self, room_id: int, window_pos: tuple[int, int]):
-        self.room_id = room_id
+    def __init__(self, room_name: str, window_pos: tuple[int, int]):
+        self.room_name = room_name
         self.window_pos = window_pos
         self.people_inside = []
 
@@ -61,10 +61,10 @@ class RoomGUI:
         for person in self.people_inside:
             person.draw(screen)
 
-    def handle_event(self, event: pygame.event.Event) -> tuple[int, str]:
+    def handle_event(self, event: pygame.event.Event) -> tuple[str, str]:
         """
         Handles mouse clicks for either selecting the room or selecting a person inside the room
-        Returns the id of clicked room and name of clicked character (TODO return types)
+        Returns the name of clicked room and name of clicked character (TODO return types)
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.is_inside_bounds(event.pos):
@@ -72,9 +72,9 @@ class RoomGUI:
                 for person in self.people_inside:
                     was_clicked = person.handle_event(event)
                     if was_clicked:
-                        return -1, person.get_name()
-                return self.room_id, ""
-        return -1, ""
+                        return "", person.get_name()
+                return self.room_name, ""
+        return "", ""
     
     def update(self, people_inside: list[Character]):
         """

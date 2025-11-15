@@ -21,19 +21,21 @@ pygame.display.set_caption("Epic murder mystery game")
 BG_COLOR = (255, 255, 255)
 
 active_clicked_character = ""
-active_clicked_room = -1
+active_clicked_room = ""
 rooms = [
-    RoomGUI(0, (600, 100)),
-    RoomGUI(1, (900, 100)),
-    RoomGUI(2, (750, 400))
+    RoomGUI(game.get_place(0), (600, 100)),
+    RoomGUI(game.get_place(1), (900, 100)),
+    RoomGUI(game.get_place(2), (750, 400))
 ]
 
-def advance_turn(selected_room: int):
+def update_people_in_all_rooms():
+    for room in rooms:
+        room.update(game.people_in_room(room.room_name))
+
+def advance_turn(selected_room: str):
     print(f"Moving to room {selected_room}!")
     # TODO
-    for room in rooms:
-        #room.update(game.people_in_room(room)) TODO fix bug
-        room.update([])
+    update_people_in_all_rooms()
     phase_clock.set_time(game.get_time())
 
 # This function is called every time "submit prompt" button is pressed
@@ -49,6 +51,9 @@ phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=game.get
 
 character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
 
+# seen before first advance
+update_people_in_all_rooms()
+
 # Main game loop
 running = True
 while running:
@@ -62,10 +67,11 @@ while running:
         for room in rooms:
             (clicked_room, clicked_character) = room.handle_event(event)
 
-            active_clicked_character = clicked_character
-            character_selection_text.set_text(f"Selected character: {active_clicked_character}")
+            if clicked_character != "":
+                active_clicked_character = clicked_character
+                character_selection_text.set_text(f"Selected character: {active_clicked_character}")
 
-            if clicked_room >= 0:
+            if clicked_room != "":
                 active_clicked_room = clicked_room
 
         # Pass event handler to components
@@ -74,7 +80,7 @@ while running:
         submit_prompt.handle_event(event, prompt_input)
 
     for room in rooms:
-        room.draw(screen, active_clicked_room == room.room_id)
+        room.draw(screen, active_clicked_room == room.room_name)
 
     mouse_pos = pygame.mouse.get_pos()
     # Draw rest of UI components

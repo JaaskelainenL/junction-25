@@ -16,8 +16,8 @@ PLAYER_NAMES = [
 class Character:
     def __init__(self, name):
         self.name = name
-        self.history = []
         self.plan = [random.choice(PLACES) for i in range(STATES)]
+        self.history = [self.plan.pop(0)]
         self.seen = []
         self.heard = []
 
@@ -70,8 +70,7 @@ class Game():
         self.game_phase = 0
 
     def people_in_room(self, room):
-        return [c for c in self.characters.values() 
-            if c.get_current_place() == room]
+        return [c for c in self.characters.values() if c.get_current_place() == room]
 
     def get_characters(self):
         return self.characters
@@ -81,6 +80,9 @@ class Game():
 
     def get_time(self):
         return PHASE_LOOKUP[self.game_phase]
+    
+    def get_place(self, index):
+        return PLACES[index]
 
     def advance(self, player_move):
         t = self.game_phase
