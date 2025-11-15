@@ -1,6 +1,7 @@
 import pygame
 import sys
 import threading
+from typing import Self
 from queue import Queue
 from game import Game, PLAYER_NAME, STATES
 from ui_room import RoomGUI
@@ -45,6 +46,9 @@ class IWindow:
     def handle_standard_events(self, event):
         pass # override
 
+    def get_next_window(self) -> Self | None:
+        return None
+
     def get_llm_response_async(self, conversation: Conversation, message: str, callback):
         def worker():
             self.is_waiting = True # lock mutex
@@ -57,8 +61,9 @@ class IWindow:
     def main_loop(self):
         running = True
         while running:
-            #if self.game.game_phase >= STATES:
-            #    self.block_interaction = True TODO change to detective window
+            next_window = self.get_next_window()
+            if next_window:
+                return next_window
             self.screen.fill(BG_COLOR)
 
             for event in pygame.event.get():
@@ -201,11 +206,19 @@ class GameWindow(IWindow):
         self.submit_prompt.handle_event(event, self.prompt_input)
         self.kill_button.handle_event(event)
 
+    def get_next_window(self):
+        if self.game.game_phase >= STATES:
+            return DetectiveWindow(self.screen, self.game)
+        else:
+            return None
+
 class DetectiveWindow(IWindow):
 
     def __init__(self, screen: pygame.Surface, game: Game):
+        IWindow.__init__(self, screen)
         self.game = game
         self.screen = screen
+        self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
 
     def draw_all(self):
         if (self.active_speech != None):
@@ -222,6 +235,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Epic murder mystery game")
 
 window = GameWindow(screen)
-window.main_loop()
+while window:
+    window = window.main_loop()
 sys.exit()
 # =============================================
