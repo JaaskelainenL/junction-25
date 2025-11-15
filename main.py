@@ -26,6 +26,7 @@ class GameWindow:
 
 
         self.block_interaction = False
+        self.is_waiting = False
         self.active_clicked_character = ""
         self.active_clicked_room = ""
         self.rooms = [
@@ -60,8 +61,10 @@ class GameWindow:
 
     def get_llm_response_async(self, conversation: Conversation, message: str, callback):
         def worker():
+            self.is_waiting = True # lock mutex
             response = conversation.send_message(message)
             callback(response)
+            self.is_waiting = False
         thread = threading.Thread(target=worker)
         thread.start()
 
@@ -183,7 +186,7 @@ class GameWindow:
                     running = False
 
                 # interaction is blocked when speech bubble is shown
-                if not self.block_interaction:
+                if not self.block_interaction and not self.is_waiting:
                     self.handle_standard_events(event)
 
             self.handle_speech()
