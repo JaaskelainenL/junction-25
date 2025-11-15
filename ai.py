@@ -19,6 +19,8 @@ with open("GEMINI_API_KEY", "r") as f:
 client = genai.Client(api_key=api_key)
 
 
+
+
 FINAL_INSTRUCTION = f"""
 The conversation has concluded.
 You must now process the *entire* conversation history (all messages from the user) and provide a single, complete JSON object.
@@ -83,6 +85,73 @@ class Conversation:
 
             for new in formatted_output.heard:
                 self.character.add_heard(f"{self.me.get_name()} said: {new}")
+            
+
+
+        except json.JSONDecodeError:
+            print("Error: Could not parse the structured output as JSON.")
+            print("Raw response:")
+            print(final_response.text)
+
+
+# Detective output json schema
+class DetectiveOutput(BaseModel):
+    suspect: str
+
+DETECTIVE_FINAL_INSTRUCTION = """
+    The interrogation has concluded.
+    You must now process the *entire* conversation history (all messages from the user) and provide a single, complete JSON object.
+    Do not add any text before or after the JSON.
+    The JSON structure must be:
+    {{
+        "suspect": "name of the suspect you think has committed the murder"
+    }}
+    Be concise and focus only on information conveyed by the user.
+    """
+
+class DetectiveConversation:
+    def __init__(self, character):
+        self.character = character
+
+        self.question_limit = 10
+        self.chat = client.chats.create(model="gemini-2.5-flash", config={"system_instruction": 
+        f"""
+            You are Detective Prime, an elite investigative AI tasked with solving a fictional murder case. A homicide has occurred, and there is a defined list of suspects.
+            Your mission is to identify the killer using strategic questioning.
+            Begin by analyzing the known facts of the murder.
+            Evaluate all suspects and form preliminary hypotheses.
+            Decide which suspects to interrogate based on logical leads and inconsistencies.
+            You may ask only a limited number of questions in total.
+            Each question must be:
+            - Highly targeted
+            - Evidence-driven
+            - Designed to uncover contradictions, motives, alibis, or hidden information
+            After each answer, reassess your strategy and update your working theory.
+            Prioritize questions that close knowledge gaps or test suspect statements.
+            Keep a clear list of facts, clues, contradictions, and suspect profiles.
+            Make deductions explicitly and logically.
+            Avoid assumptions not grounded in provided evidence.
+            When confident, identify the most likely culprit.
+            Provide a clear explanation of your reasoning and the evidence that led to your conclusion.
+            You have {self.question_limit} questions to solve the murder, use them wisely.
+        """
+        })
+
+    def send_message(self, user_input):
+        return self.chat.send_message(user_input)
+
+    
+    def end_conversation(self):
+        final_response = self.chat.send_message(DETECTIVE_FINAL_INSTRUCTION, config={
+            "response_mime_type": "application/json",
+            "response_json_schema": DetectiveOutput.model_json_schema(),
+        })
+
+        try:
+            # The AI is instructed to output only JSON, so we try to parse it
+            formatted_output = DetectiveOutput.model_validate_json(final_response.text.strip())
+
+            return formatted_output.suspect
             
 
 
