@@ -70,7 +70,8 @@ class Game():
         self.game_phase = 0
 
     def people_in_room(self, room):
-        return [c.get_current_place() for c in self.characters.values]
+        return [c for c in self.characters.values() 
+            if c.get_current_place() == room]
 
     def get_characters(self):
         return self.characters

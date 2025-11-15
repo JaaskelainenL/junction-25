@@ -1,7 +1,43 @@
 import pygame
 import random
+from math import sqrt
+from game import Character
 
-class Room:
+class CharacterGUI:
+    def __init__(self, character: Character, room_window_pos: tuple[int, int], room_size: tuple[int, int]):
+        # new random instance with name as seed, so color and pos are always same
+        self.character_name = character.get_name()
+        rng = random.Random(self.character_name)
+        self.color = rng.choices(range(256), k=3)
+
+        offset_from_edges = 20
+        self.local_pos = (rng.random(), rng.random())
+        self.screen_pos = ((self.local_pos[0] * (room_size[0] - 2 * offset_from_edges)) + room_window_pos[0] + offset_from_edges,
+                           (self.local_pos[1] * (room_size[1] - 2 * offset_from_edges)) + room_window_pos[1] + offset_from_edges)
+        self.radius = 20
+
+    def draw(self, screen: pygame.Surface):
+        pygame.draw.circle(screen, self.color, self.screen_pos, self.radius)
+
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """
+        Returns true if this elements is clicked
+        """
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            return self.is_inside_bounds(event.pos)
+        return False
+
+    def is_inside_bounds(self, position: tuple[int, int]) -> bool:
+        # Euclidean dist of circle
+        dist = sqrt((position[0] - self.screen_pos[0]) * (position[0] - self.screen_pos[0]) 
+                    + (position[1] - self.screen_pos[1]) * (position[1] - self.screen_pos[1]))
+        return dist < self.radius
+    
+    def get_name(self) -> str:
+        return self.character_name
+
+
+class RoomGUI:
     """
     Render a room on the GUI (containing the characters in there)
     """
@@ -23,29 +59,29 @@ class Room:
 
         # Draw people inside this room
         for person in self.people_inside:
-            rng = random.Random(person) # new random instance with name as seed
-            person_color = rng.choices(range(256), k=3)
-            offset_from_edges = 20
-            pos = (rng.uniform(0, self.size[0] - 2 * offset_from_edges) + self.window_pos[0] + offset_from_edges, 
-                   rng.uniform(0, self.size[1] - 2 * offset_from_edges) + self.window_pos[1] + offset_from_edges)
+            person.draw(screen)
 
-            radius = 20
-            pygame.draw.circle(screen, person_color, pos, radius)
-
-    def handle_event(self, event: pygame.event.Event) -> tuple[int, int]:
+    def handle_event(self, event: pygame.event.Event) -> tuple[int, str]:
         """
         Handles mouse clicks for either selecting the room or selecting a person inside the room
-        Returns the id of clicked room and id of clicked character (TODO return types)
+        Returns the id of clicked room and name of clicked character (TODO return types)
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.is_inside_bounds(event.pos):
-                # TODO character clicking
-                return self.room_id, -1
-        return -1, -1
+                # character clicking
+                for person in self.people_inside:
+                    was_clicked = person.handle_event(event)
+                    if was_clicked:
+                        return -1, person.get_name()
+                return self.room_id, ""
+        return -1, ""
     
-    def update(self, people_inside: list[str]):
-        self.people_inside = people_inside
+    def update(self, people_inside: list[Character]):
+        """
+        Update people in this room. CharacterGUI wrappers are made from them
+        """
+        self.people_inside = [CharacterGUI(c, self.window_pos, self.size) for c in people_inside]
 
-    def is_inside_bounds(self, position: tuple[int, int]):
+    def is_inside_bounds(self, position: tuple[int, int]) -> bool:
         return ((self.window_pos[0] < position[0] < self.window_pos[0] + self.size[0])
             and (self.window_pos[1] < position[1] < self.window_pos[1] + self.size[1]))

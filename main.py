@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from game import Game
-from ui_room import Room as RoomGUI
+from ui_room import RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
 from ui_textarea import TextArea
@@ -20,6 +20,7 @@ pygame.display.set_caption("Epic murder mystery game")
 
 BG_COLOR = (255, 255, 255)
 
+active_clicked_character = ""
 active_clicked_room = -1
 rooms = [
     RoomGUI(0, (600, 100)),
@@ -31,8 +32,8 @@ def advance_turn(selected_room: int):
     print(f"Moving to room {selected_room}!")
     # TODO
     for room in rooms:
-        #room.update(["alice", "bob", "carol"]) TODO
-        room.update(list(map(str, random.choices(range(256), k=3)))) # TODO this is only for testing the rendering
+        #room.update(game.people_in_room(room)) TODO fix bug
+        room.update([])
     phase_clock.set_time(game.get_time())
 
 # This function is called every time "submit prompt" button is pressed
@@ -46,6 +47,8 @@ prompt_input = TextInput(window_pos=(50, 150), size=(300,250))
 submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=on_prompt_submit)
 phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=game.get_time())
 
+character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
+
 # Main game loop
 running = True
 while running:
@@ -55,9 +58,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Change active room selection. TODO: change active character selection
+        # Change active room and character selection
         for room in rooms:
             (clicked_room, clicked_character) = room.handle_event(event)
+
+            active_clicked_character = clicked_character
+            character_selection_text.set_text(f"Selected character: {active_clicked_character}")
+
             if clicked_room >= 0:
                 active_clicked_room = clicked_room
 
@@ -75,6 +82,7 @@ while running:
     prompt_input.draw(screen, mouse_pos)
     submit_prompt.draw(screen, mouse_pos)
     phase_clock.draw(screen)
+    character_selection_text.draw(screen)
 
     pygame.display.flip()
 
