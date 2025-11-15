@@ -74,7 +74,7 @@ class GameWindow:
         talking_to = self.active_clicked_character
 
 
-        if not talking_to or not message:
+        if not talking_to or not message or talking_to == PLAYER_NAME:
             return        
         
         # Check if we are in the same room
