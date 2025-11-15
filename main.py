@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 from game import Game
 from ui_room import Room as RoomGUI
 from ui_button import Button
@@ -29,6 +30,9 @@ rooms = [
 def advance_turn(selected_room: int):
     print(f"Moving to room {selected_room}!")
     # TODO
+    for room in rooms:
+        #room.update(["alice", "bob", "carol"]) TODO
+        room.update(list(map(str, random.choices(range(256), k=3)))) # TODO this is only for testing the rendering
     phase_clock.set_time(game.get_time())
 
 # This function is called every time "submit prompt" button is pressed
@@ -51,11 +55,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Change active room selection
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for room in rooms:
-                if room.is_inside_bounds(event.pos):
-                    active_clicked_room = room.room_id
+        # Change active room selection. TODO: change active character selection
+        for room in rooms:
+            (clicked_room, clicked_character) = room.handle_event(event)
+            if clicked_room >= 0:
+                active_clicked_room = clicked_room
 
         # Pass event handler to components
         advance_button.handle_event(event, active_clicked_room)
