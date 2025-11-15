@@ -16,10 +16,17 @@ PLAYER_NAMES = [
 class Character:
     def __init__(self, name):
         self.name = name
+        self.alive = True
         self.plan = [random.choice(PLACES) for i in range(STATES)]
         self.history = [self.plan.pop(0)]
         self.seen = []
         self.heard = []
+
+    def kill(self):
+        self.alive = False
+
+    def is_alive(self):
+        return self.alive
 
     def get_name(self):
         return self.name
@@ -87,13 +94,14 @@ class Game():
     def advance(self, player_move):
         t = self.game_phase
         for c in self.characters.values():
-            seen = [character for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
+            if c.is_alive():
+                seen = [character for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
 
-            if c == self.player:
-                c.advance(t + 1, seen, player_move)
-            else:
-                # randomly pick seen/heard to tell others
-                c.advance(t+1, seen)
+                if c == self.player:
+                    c.advance(t + 1, seen, player_move)
+                else:
+                    # randomly pick seen/heard to tell others
+                    c.advance(t+1, seen)
         self.game_phase += 1
 
 
