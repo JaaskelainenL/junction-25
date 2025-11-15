@@ -14,9 +14,6 @@ class TextArea:
         self.font: pygame.font.Font = pygame.font.Font(None, 32)
 
     def set_text(self, new_text: str):
-        """
-        Replace the text displayed in the TextArea.
-        """
         self.text = new_text
 
     def draw(self, screen: pygame.Surface):

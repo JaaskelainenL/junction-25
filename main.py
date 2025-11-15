@@ -15,7 +15,7 @@ pygame.init()
 # Screen dimensions
 WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Text Input Example")
+pygame.display.set_caption("Epic murder mystery game")
 
 BG_COLOR = (255, 255, 255)
 

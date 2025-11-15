@@ -1,8 +1,9 @@
 import pygame
 
 class Room:
-    room_id: int = -1
-    window_pos: tuple[int, int] = (0, 0)
+    """
+    Render a room on the GUI (containing the characters in there)
+    """
     size: tuple[int, int] = (200, 200)
     color = (200, 200, 200)
     highlight_offset = 10
@@ -14,16 +15,9 @@ class Room:
 
     def draw(self, screen: pygame.Surface, highlight: bool):
         room_box = pygame.Rect(self.window_pos[0], self.window_pos[1], self.size[0], self.size[1])
-        if highlight:
-            highlight_box = pygame.Rect(
-                self.window_pos[0] - self.highlight_offset,
-                self.window_pos[1] - self.highlight_offset, 
-                self.size[0] + 2 * self.highlight_offset, 
-                self.size[1] + 2 * self.highlight_offset
-            )
-            pygame.draw.rect(screen, self.highlight_color, highlight_box)
-
         pygame.draw.rect(screen, self.color, room_box)
+        if highlight:
+            pygame.draw.rect(screen, self.highlight_color, room_box, self.highlight_offset)
 
     def is_inside_bounds(self, position: tuple[int, int]):
         return ((self.window_pos[0] < position[0] < self.window_pos[0] + self.size[0])
