@@ -20,6 +20,7 @@ class SpeechBubble:
         self.last_revealed = time.time()
         self.done = False
         self.all_written = False
+        print(f"{character_name}: {text}") # debug printing
 
     def draw(self, screen: pygame.Surface):
         rect = pygame.Rect(*self.window_pos, *self.size)

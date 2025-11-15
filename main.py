@@ -1,5 +1,6 @@
 import pygame
 import sys
+import threading
 from queue import Queue
 from game import Game, PLAYER_NAME, STATES
 from ui_room import RoomGUI
@@ -57,7 +58,12 @@ class GameWindow:
         self.update_people_in_all_rooms()
         self.phase_clock.set_time(self.game.get_time())
 
-
+    def get_llm_response_async(self, conversation: Conversation, message: str, callback):
+        def worker():
+            response = conversation.send_message(message)
+            callback(response)
+        thread = threading.Thread(target=worker)
+        thread.start()
 
     # This function is called every time "submit prompt" button is pressed
     def on_prompt_submit(self, input_field: TextInput):
@@ -70,13 +76,13 @@ class GameWindow:
         if talking_to not in self.conversations:
             self.conversations[talking_to] = Conversation(self.game.player, self.game.characters[talking_to], self.game.game_phase)
 
-        response = self.conversations[talking_to].send_message(message)
-
-        print(f"Player: {message}")
         self.add_speech_to_queue(PLAYER_NAME, message)
-        self.add_speech_to_queue(talking_to, response.text)
-        print(f"{talking_to}: {response.text}")
-        # TODO
+
+        self.get_llm_response_async(
+            self.conversations[talking_to],
+            message,
+            callback=lambda response: self.add_speech_to_queue(talking_to, response.text)
+        )
         input_field.clear()
 
     def on_kill(self):
