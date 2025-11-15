@@ -12,6 +12,8 @@ from ui_speech import SpeechBubble
 WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
 
+PLAYERNAME = "player"
+
 class GameWindow:
     def __init__(self):
         self.game = Game()
@@ -45,10 +47,17 @@ class GameWindow:
     def on_prompt_submit(self, input_field: TextInput):
         message = input_field.get_text()
         print(f"Input: {message}")
-        self.add_speech_to_queue("Player", message)
+        self.add_speech_to_queue(PLAYERNAME, message)
         self.add_speech_to_queue("Bob", "Test response lorem ipsum")
         # TODO
         input_field.clear()
+
+    def on_kill(self):
+        if self.active_clicked_character != "" and self.active_clicked_character != PLAYERNAME:
+            character = self.game.get_characters()[self.active_clicked_character]
+            player = self.game.get_characters()[PLAYERNAME]
+            if character.get_current_place() == player.get_current_place():
+                character.kill()
 
     def add_speech_to_queue(self, character_name: str, text: str):
         speech = SpeechBubble(character_name, text)
@@ -60,6 +69,7 @@ class GameWindow:
         self.submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=self.game.get_time())
         self.character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
+        self.kill_button = Button(window_pos=(600, 50), size=(100, 50), text="Kill", on_click_function=self.on_kill)
         # seen before first advance
         self.update_people_in_all_rooms()
 
@@ -73,6 +83,7 @@ class GameWindow:
         self.prompt_input.draw(self.screen, mouse_pos)
         self.submit_prompt.draw(self.screen, mouse_pos)
         self.phase_clock.draw(self.screen)
+        self.kill_button.draw(self.screen, mouse_pos)
         self.character_selection_text.draw(self.screen)
 
         if (self.active_speech != None):
@@ -88,6 +99,7 @@ class GameWindow:
             if clicked_character != "":
                 active_clicked_character = clicked_character
                 self.character_selection_text.set_text(f"Selected character: {active_clicked_character}")
+                self.kill_button.text_area.set_text(f"Kill {active_clicked_character}")
 
             if clicked_room != "":
                 self.active_clicked_room = clicked_room
@@ -96,6 +108,7 @@ class GameWindow:
         self.advance_button.handle_event(event, self.active_clicked_room)
         self.prompt_input.handle_event(event)
         self.submit_prompt.handle_event(event, self.prompt_input)
+        self.kill_button.handle_event(event)
 
     def handle_speech(self):
         if not self.speech_queue.empty():
