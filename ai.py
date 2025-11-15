@@ -137,8 +137,9 @@ class DetectiveConversation:
         self.chat.send_message(f"You are now talking to {character.get_name()}. Start asking questions.")
 
     def send_message(self, user_input):
-        self.question_limit -= 1
-        return self.chat.send_message(user_input)
+        if self.question_limit > 0:
+            self.question_limit -= 1
+            return self.chat.send_message(user_input)
 
     
     def end_conversation(self):
