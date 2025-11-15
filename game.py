@@ -7,13 +7,13 @@ PLACES = [
 ]
 
 
-PHASE_LOOKUP = ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM"]
-STATES = len(PHASE_LOOKUP)
+PHASE_LOOKUP = ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM", "Next day"]
+STATES = 6#len(PHASE_LOOKUP)
 
 PLAYER_NAME = "Player"
 
 PLAYER_NAMES = [
-    "Alice", "Bob", "Carol", "Dave"
+    "Alice", "Bob"#, "Carol", "Dave"
 ]
 
 class Character:
@@ -102,6 +102,12 @@ class Game():
         c.kill()
         for person in self.people_in_room(c.get_current_place()):
             person.add_seen(f"{PLAYER_NAME} killed {c.get_name()} in {c.get_current_place()} at {self.get_time()}")
+
+    def killed_people(self) -> list[str]:
+        return [c.get_name() for c in self.characters.values() if not c.is_alive()]
+    
+    def alive_people(self) -> list[Character]:
+        return [c for c in self.characters.values() if c.is_alive()]
 
     def advance(self, player_move):
         if self.game_phase >= STATES:

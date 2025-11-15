@@ -97,6 +97,7 @@ class Conversation:
 # Detective output json schema
 class DetectiveOutput(BaseModel):
     suspect: str
+    explanation: str
 
 DETECTIVE_FINAL_INSTRUCTION = """
     The interrogation has concluded.
@@ -105,15 +106,17 @@ DETECTIVE_FINAL_INSTRUCTION = """
     The JSON structure must be:
     {{
         "suspect": "name of the suspect you think has committed the murder"
+        "explanation": "give a reasoning for your accusation"
     }}
     Be concise and focus only on information conveyed by the user.
     """
 
-MAX_QUESTIONS = 10
+MAX_QUESTIONS = 2
 
 class DetectiveConversation:
     def __init__(self, character, victim):
         self.character = character
+        self.victim = victim
 
         self.question_limit = MAX_QUESTIONS
         self.chat = client.chats.create(model="gemini-2.5-flash", config={"system_instruction": 
@@ -132,12 +135,11 @@ class DetectiveConversation:
     def change_character(self, character):
         self.question_limit = MAX_QUESTIONS
         self.character = character
-        self.chat.send_message(f"You are now talking to {character.get_name()}. Start asking questions.")
+        return self.chat.send_message(f"You are now talking to {character.get_name()}. Start asking questions.")
 
     def send_message(self, user_input):
-        if self.question_limit > 0:
-            self.question_limit -= 1
-            return self.chat.send_message(user_input)
+        self.question_limit -= 1
+        return self.chat.send_message(user_input)
 
     
     def end_conversation(self):
@@ -150,7 +152,7 @@ class DetectiveConversation:
             # The AI is instructed to output only JSON, so we try to parse it
             formatted_output = DetectiveOutput.model_validate_json(final_response.text.strip())
 
-            return formatted_output.suspect
+            return formatted_output
             
 
 

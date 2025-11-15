@@ -1,16 +1,17 @@
 import pygame
+import random
 import sys
 import threading
 from typing import Self
 from queue import Queue
-from game import Game, PLAYER_NAME, STATES
+from game import Game, PLAYER_NAME, STATES, Character
 from ui_room import RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
 from ui_textarea import TextArea
 from ui_clock import Clock as ClockGUI
 from ui_speech import SpeechBubble
-from ai import Conversation
+from ai import Conversation, DetectiveConversation
 
 WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
@@ -221,6 +222,36 @@ class DetectiveWindow(IWindow):
         self.prompt_input = TextInput(window_pos=(200, 100), size=(500,350), on_enter_function=self.on_prompt_submit)
         self.submit_prompt = Button(window_pos=(400, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
+
+        self.get_detective_async(
+            callback=lambda response, person: self.add_speech_to_queue(person, response.text)
+        )
+
+    def get_detective_async(self, callback):
+        def worker():
+            self.is_waiting = True # lock mutex
+            detective = DetectiveConversation(None, ", ".join(self.game.killed_people()))
+            detective_char = Character("Detective")
+            suspects = self.game.alive_people()
+            random.shuffle(suspects)
+            for suspect in suspects:
+                sus_conversation = Conversation(detective_char, suspect, STATES)
+                sus_conversation.send_message(f"""{detective.victim} has been killed by someone in this village. 
+                                              A detective has come to who did it and will interrogate each town member. 
+                                              Now it's your turn to answer the questions he asks you.""")
+                question = detective.change_character(suspect)
+                while detective.question_limit >= 0 and not question.text.startswith("ok, i am done here"):
+                    callback(question, f"{detective_char.get_name()} question #{detective.question_limit}")
+                    response = sus_conversation.send_message(question.text)
+                    callback(response, f"{suspect.get_name()}")
+                    question = detective.send_message(response.text)
+            final_response = detective.end_conversation()
+            final_message = f"{final_response.suspect} did it. Reasoning: {final_response.explanation}"
+            #callback(final_message, f"{detective_char.get_name()} solution")
+            print(final_message)
+            self.is_waiting = False
+        thread = threading.Thread(target=worker)
+        thread.start()
 
     def on_prompt_submit(self, input_field: TextInput):
         message = input_field.get_text()
