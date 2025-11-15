@@ -6,10 +6,11 @@ PLACES = [
     "Forest"
 ]
 
-PLAYER_NAME = "Player"
 
 PHASE_LOOKUP = ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM"]
 STATES = len(PHASE_LOOKUP)
+
+PLAYER_NAME = "Jarmo"
 
 PLAYER_NAMES = [
     "Alice", "Bob", "Carol", "Dave"
@@ -106,6 +107,8 @@ class Game():
                 seen = [character.get_name() for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
                 print(f"{c.get_name()} saw: {seen} in {c.get_current_place()}")
                 
+        for c in self.characters.values():
+            print(f"{c.get_name()} has heard: {c.heard}")
 
         for c in self.characters.values():
             if c == self.player:
