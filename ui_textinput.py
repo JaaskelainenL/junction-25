@@ -13,13 +13,14 @@ class TextInput:
     focus_color: tuple[int, int, int] = (100, 0, 150)
     border_width: int = 2
 
-    def __init__(self, window_pos: tuple[int, int], size: tuple[int, int]):
+    def __init__(self, window_pos: tuple[int, int], size: tuple[int, int], on_enter_function):
         self.window_pos = window_pos
         self.size = size
         self.focused = False
         self._last_caret_switch = time.time()
         self._caret_visible = True
         self.text_area = TextArea(window_pos, size, "")
+        self.on_enter_function = on_enter_function
 
     def draw(self, screen: pygame.Surface, mouse_pos: tuple[int, int]):
         """
@@ -53,7 +54,7 @@ class TextInput:
                                  (caret_pos[0], caret_pos[1] + caret_pos[2]), 
                                  2)
 
-    def handle_event(self, event: pygame.event.Event):
+    def handle_event(self, event: pygame.event.Event, *args):
         """
         Handles mouse clicks for focusing and keyboard input when focused.
         """
@@ -70,7 +71,7 @@ class TextInput:
 
             # Regular character input
             elif event.key == pygame.K_RETURN:
-                pass  # You can ignore or handle Enter differently if desired
+                self.on_enter_function(*args)
             else:
                 self.text_area.text += event.unicode
 

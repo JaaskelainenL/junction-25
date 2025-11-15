@@ -65,7 +65,7 @@ class GameWindow:
 
     def init_gui_components(self):
         self.advance_button = Button(window_pos=(50, 50), size=(150, 50), text="Advance turn", on_click_function=self.advance_turn)
-        self.prompt_input = TextInput(window_pos=(50, 150), size=(300,250))
+        self.prompt_input = TextInput(window_pos=(50, 150), size=(300,250), on_enter_function=self.on_prompt_submit)
         self.submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=self.game.get_time())
         self.character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
@@ -106,7 +106,7 @@ class GameWindow:
 
         # Rest of components
         self.advance_button.handle_event(event, self.active_clicked_room)
-        self.prompt_input.handle_event(event)
+        self.prompt_input.handle_event(event, self.prompt_input)
         self.submit_prompt.handle_event(event, self.prompt_input)
         self.kill_button.handle_event(event)
 
