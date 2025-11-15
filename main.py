@@ -218,16 +218,34 @@ class DetectiveWindow(IWindow):
         IWindow.__init__(self, screen)
         self.game = game
         self.screen = screen
+        self.prompt_input = TextInput(window_pos=(200, 100), size=(500,350), on_enter_function=self.on_prompt_submit)
+        self.submit_prompt = Button(window_pos=(400, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
 
+    def on_prompt_submit(self, input_field: TextInput):
+        message = input_field.get_text()
+        
+        self.add_speech_to_queue(PLAYER_NAME, message)
+        #self.get_llm_response_async(
+        #    self.conversations[talking_to],
+        #    message,
+        #    callback=lambda response: self.add_speech_to_queue(talking_to, response.text)
+        #)
+        input_field.clear()
+
     def draw_all(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.prompt_input.draw(self.screen, mouse_pos)
+        self.submit_prompt.draw(self.screen, mouse_pos)
+
         if (self.active_speech != None):
             self.active_speech.draw(self.screen)
 
         pygame.display.flip()
 
     def handle_standard_events(self, event):
-        pass
+        self.prompt_input.handle_event(event, self.prompt_input)
+        self.submit_prompt.handle_event(event, self.prompt_input)
 
 # ================ MAIN FUNC ==================
 pygame.init()
