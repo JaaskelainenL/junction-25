@@ -86,8 +86,8 @@ class Game():
 
     def advance(self, player_move):
         t = self.game_phase
-        for c in self.characters.values:
-            seen = [character for character in self.characters.values if character.get_current_place() == c.get_current_place()]
+        for c in self.characters.values():
+            seen = [character for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
 
             if c == self.player:
                 c.advance(t + 1, seen, player_move)
