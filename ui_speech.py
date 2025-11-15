@@ -2,7 +2,7 @@ import pygame
 import time
 from ui_textarea import TextArea
 
-LETTER_REVEAL_DELAY = 0.05
+LETTER_REVEAL_DELAY = 0.02
 REMAIN_AFTER_FINISH = 3
 
 class SpeechBubble:

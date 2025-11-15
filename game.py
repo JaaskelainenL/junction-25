@@ -1,16 +1,18 @@
 import random
 
 PLACES = [
-    "house",
-    "field",
-    "forest"
+    "House",
+    "Field",
+    "Forest"
 ]
 
-STATES = 3
-PHASE_LOOKUP = ["12PM", "3PM", "6PM"]
+PLAYER_NAME = "Player"
+
+PHASE_LOOKUP = ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM"]
+STATES = len(PHASE_LOOKUP)
 
 PLAYER_NAMES = [
-    "alice", "bob", "carol", "dave"
+    "Alice", "Bob", "Carol", "Dave"
 ]
 
 class Character:
@@ -74,8 +76,8 @@ class Game():
 
     def __init__(self):
         self.characters = {name: Character(name) for name in PLAYER_NAMES}
-        self.player = Character("player")
-        self.characters["player"] = self.player
+        self.player = Character(PLAYER_NAME)
+        self.characters[PLAYER_NAME] = self.player
         self.target = None
 
         self.game_phase = 0
@@ -101,13 +103,16 @@ class Game():
         t = self.game_phase
         for c in self.characters.values():
             if c.is_alive():
-                seen = [character for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
+                seen = [character.get_name() for character in self.characters.values() if character.get_current_place() == c.get_current_place()]
+                print(f"{c.get_name()} saw: {seen} in {c.get_current_place()}")
+                
 
-                if c == self.player:
+        for c in self.characters.values():
+            if c == self.player:
                     c.advance(t + 1, seen, player_move)
-                else:
-                    # randomly pick seen/heard to tell others
-                    c.advance(t+1, seen)
+            else:
+                # randomly pick seen/heard to tell others
+                c.advance(t+1, seen)
         self.game_phase += 1
 
 

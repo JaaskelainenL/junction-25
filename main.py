@@ -1,7 +1,7 @@
 import pygame
 import sys
 from queue import Queue
-from game import Game, STATES
+from game import Game, PLAYER_NAME, STATES
 from ui_room import RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
@@ -13,7 +13,6 @@ from ai import Conversation
 WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
 
-PLAYERNAME = "player"
 
 class GameWindow:
     def __init__(self):
@@ -74,16 +73,16 @@ class GameWindow:
         response = self.conversations[talking_to].send_message(message)
 
         print(f"Player: {message}")
-        self.add_speech_to_queue(PLAYERNAME, message)
+        self.add_speech_to_queue(PLAYER_NAME, message)
         self.add_speech_to_queue(talking_to, response.text)
         print(f"{talking_to}: {response.text}")
         # TODO
         input_field.clear()
 
     def on_kill(self):
-        if self.active_clicked_character != "" and self.active_clicked_character != PLAYERNAME:
+        if self.active_clicked_character != "" and self.active_clicked_character != PLAYER_NAME:
             character = self.game.get_characters()[self.active_clicked_character]
-            player = self.game.get_characters()[PLAYERNAME]
+            player = self.game.get_characters()[PLAYER_NAME]
             if character.get_current_place() == player.get_current_place():
                 character.kill()
                 print(f"{character.get_name()} alive: {character.is_alive()}")
@@ -100,7 +99,7 @@ class GameWindow:
         self.submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
         self.phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=self.game.get_time())
         self.character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
-        self.debug = TextArea(window_pos=(50, 600), size=(400, 50), text="asdasdjahsdjahsgd")
+        self.debug = TextArea(window_pos=(50, 520), size=(400, 50), text="")
         self.kill_button = Button(window_pos=(800, 50), size=(100, 50), text="Kill", on_click_function=self.on_kill)
         # seen before first advance
         self.update_people_in_all_rooms()

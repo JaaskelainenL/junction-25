@@ -1,7 +1,7 @@
 import pygame
 import random
 from math import sqrt
-from game import Character
+from game import Character, PLAYER_NAME
 from ui_textarea import TextArea
 
 SHOW_ALL_CHARACTERS = True
@@ -11,7 +11,7 @@ class CharacterGUI:
         # new random instance with name as seed, so color and pos are always same
         self.character = character
         self.character_name = character.get_name()
-        rng = random.Random(self.character_name)
+        rng = random.Random(self.character_name.lower())
         self.color = rng.choices(range(256), k=3)
 
         offset_from_edges = 20
@@ -21,7 +21,7 @@ class CharacterGUI:
         self.radius = 20
 
     def draw(self, screen: pygame.Surface):
-        if self.character_name == "player":
+        if self.character_name == PLAYER_NAME:
             player_rect = pygame.Rect(self.screen_pos[0] - self.radius, 
                                       self.screen_pos[1] - self.radius, 
                                       2 * self.radius, 2 * self.radius)
@@ -95,7 +95,7 @@ class RoomGUI:
         Update people in this room. CharacterGUI wrappers are made from them. People inside is set to empty list
         if SHOW_ALL_CHARACTERS=False and player is not in the room
         """
-        is_player_inside = len([c for c in people_inside if c.get_name() == "player"]) > 0
+        is_player_inside = len([c for c in people_inside if c.get_name() == PLAYER_NAME]) > 0
         if SHOW_ALL_CHARACTERS or is_player_inside:
             self.people_inside = [CharacterGUI(c, self.window_pos, self.size) for c in people_inside]
 

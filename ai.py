@@ -51,9 +51,10 @@ class Conversation:
             You are currently in {character.get_current_place()},
             You are talking to {self.me.get_name()},
             You have previously been in: {", ".join(character.get_history())},
-            You have previously seen: {", ".join(character.get_seen())}
-            You have previously heard: {", ".join(character.get_heard())}
-            You plan to go to these places next: {", ".join(next_places)} (you may only move during those times)
+            You have previously seen: {", ".join(character.get_seen())},
+            You have previously heard: {", ".join(character.get_heard())},
+            You plan to go to these places next: {", ".join(next_places)} (you may only move during those times),
+            Your plan is flexible, you can deviate from it if someone asks you to.
         """
         })
 
