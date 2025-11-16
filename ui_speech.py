@@ -14,7 +14,7 @@ class SpeechBubble:
         self.character_name = character_name
         self.text_to_write = list(text)
         self.window_pos = (300, 150)
-        self.size = (600,400)
+        self.size = (680,400)
         self.text_pos = (self.window_pos[0], self.window_pos[1] + 50)
         self.text_size = (self.size[0], self.size[1] - 50)
         self.name_text = TextArea(self.window_pos, self.size, text=f"{self.character_name}:")
