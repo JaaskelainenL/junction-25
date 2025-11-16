@@ -76,6 +76,9 @@ class IWindow:
                 if not self.block_interaction and not self.is_waiting:
                     self.handle_standard_events(event)
 
+                if self.active_speech:
+                    self.active_speech.handle_event(event)
+
             self.handle_speech()
             self.draw_all()
 
