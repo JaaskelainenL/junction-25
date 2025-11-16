@@ -5,7 +5,7 @@ import threading
 from time import sleep
 from typing import Self
 from queue import Queue
-from game import Game, PLAYER_NAME, STATES, Character
+from game import Game, PLAYER_NAME, STATES, Character, PHASE_LOOKUP
 from ui_room import RoomGUI
 from ui_button import Button
 from ui_textinput import TextInput
@@ -87,7 +87,7 @@ class IWindow:
         pygame.quit()
 
 class GameWindow(IWindow):
-    def __init__(self, screen: pygame.Surface):
+    def __init__(self, screen: pygame.Surface, start_msg: str = ""):
         IWindow.__init__(self, screen)
         self.game = Game()
         self.conversations = {}
@@ -99,6 +99,11 @@ class GameWindow(IWindow):
             RoomGUI(self.game.get_place(2), (750, 400))
         ]
         self.init_gui_components()
+        if start_msg:
+            self.add_speech_to_queue("Info", start_msg)
+
+        self.target_character = random.choice([c for c in self.game.characters.values() if c.get_name() != PLAYER_NAME])
+        self.add_speech_to_queue("Info", f"Your target is {self.target_character.get_name()}. You must kill this person before {PHASE_LOOKUP[STATES-1]}. Don't get caught. Press any key to continue.")
 
     def update_people_in_all_rooms(self):
         for room in self.rooms:
@@ -214,7 +219,11 @@ class GameWindow(IWindow):
 
     def get_next_window(self):
         if self.game.game_phase >= STATES:
-            return DetectiveWindow(self.screen, self.game)
+            if (self.target_character.is_alive()):
+                new_game = GameWindow(self.screen, f"{self.target_character.get_name()} is still alive. You lost the game!")
+                return new_game
+            else:
+                return DetectiveWindow(self.screen, self.game)
         else:
             return None
 
