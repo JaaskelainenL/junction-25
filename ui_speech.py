@@ -3,6 +3,8 @@ import time
 from ui_textarea import TextArea
 
 LETTER_REVEAL_DELAY = 0.02
+
+AUTO_SKIP_TIMER = False
 REMAIN_AFTER_FINISH = 3
 
 class SpeechBubble:
@@ -29,8 +31,9 @@ class SpeechBubble:
         self.text_area.draw(screen)
 
     def handle_event(self, event: pygame.event.Event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+        if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+            if self.all_written:
+                self.done = True
 
     def reveal_letter(self, now: float):
         if len(self.text_to_write) > 0:
@@ -44,7 +47,7 @@ class SpeechBubble:
         if not self.done:
             if not self.all_written and now - self.last_revealed > LETTER_REVEAL_DELAY:
                 self.reveal_letter(now)
-            if self.all_written and now - self.last_revealed > REMAIN_AFTER_FINISH:
+            if AUTO_SKIP_TIMER and self.all_written and now - self.last_revealed > REMAIN_AFTER_FINISH:
                 self.done = True
         return self.done
     
