@@ -13,7 +13,7 @@ STATES = 6#len(PHASE_LOOKUP)
 PLAYER_NAME = "Player"
 
 PLAYER_NAMES = [
-    "Alice", "Bob"#, "Carol", "Dave"
+    "Alice", "Bob", "Carol"#, "Dave"
 ]
 
 class Character:

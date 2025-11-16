@@ -159,13 +159,13 @@ class GameWindow(IWindow):
         self.set_clicked_character("")
 
     def init_gui_components(self):
-        self.advance_button = Button(window_pos=(50, 50), size=(150, 50), text="Advance turn", on_click_function=self.advance_turn)
-        self.prompt_input = TextInput(window_pos=(50, 150), size=(300,250), on_enter_function=self.on_prompt_submit)
-        self.submit_prompt = Button(window_pos=(50, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
-        self.phase_clock = ClockGUI(window_pos=(900, 50), size=(200, 50), start_time=self.game.get_time())
-        self.character_selection_text = TextArea(window_pos=(400, 50), size=(400, 50), text="")
-        self.debug = TextArea(window_pos=(50, 520), size=(400, 50), text="")
-        self.kill_button = Button(window_pos=(800, 50), size=(100, 50), text="Kill", on_click_function=self.on_kill)
+        self.advance_button = Button(window_pos=(750, 25), size=(200, 50), text="Advance turn", on_click_function=self.advance_turn)
+        self.prompt_input = TextInput(window_pos=(50, 100), size=(500,250), on_enter_function=self.on_prompt_submit)
+        self.submit_prompt = Button(window_pos=(150, 450), size=(300,100), text="Send message ...", on_click_function=self.on_prompt_submit)
+        self.phase_clock = ClockGUI(window_pos=(1000, 25), size=(200, 50), start_time=self.game.get_time())
+        self.character_selection_text = TextArea(window_pos=(100, 25), size=(400, 50), text="Click characters to interact with them")
+        #self.debug = TextArea(window_pos=(50, 520), size=(400, 50), text="")
+        self.kill_button = Button(window_pos=(500, 25), size=(200, 50), text="Kill", on_click_function=self.on_kill)
         # seen before first advance
         self.update_people_in_all_rooms()
 
@@ -186,9 +186,8 @@ class GameWindow(IWindow):
         for c,k in self.game.characters.items():
             debugtext += f"{c} plan: {k.plan}".replace(" ", "") + " "
 
-        self.debug.set_text(debugtext)
-
-        self.debug.draw(self.screen)
+        #self.debug.set_text(debugtext)
+        #self.debug.draw(self.screen)
 
         if (self.active_speech != None):
             self.active_speech.draw(self.screen)
@@ -199,6 +198,7 @@ class GameWindow(IWindow):
         self.active_clicked_character = clicked_character
         self.character_selection_text.set_text(f"Selected character: {self.active_clicked_character}")
         self.kill_button.text_area.set_text(f"Kill {self.active_clicked_character}")
+        self.submit_prompt.text_area.set_text(f"Send message to {self.active_clicked_character}")
 
     def handle_standard_events(self, event):
         # Change active room and character selection
@@ -233,8 +233,8 @@ class DetectiveWindow(IWindow):
         IWindow.__init__(self, screen)
         self.game = game
         self.screen = screen
-        self.prompt_input = TextInput(window_pos=(200, 100), size=(500,350), on_enter_function=self.on_prompt_submit)
-        self.submit_prompt = Button(window_pos=(400, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
+        self.prompt_input = TextInput(window_pos=(300, 100), size=(680,350), on_enter_function=self.on_prompt_submit)
+        self.submit_prompt = Button(window_pos=(500, 500), size=(280,50), text="Submit", on_click_function=self.on_prompt_submit)
         
         self.user_message = ""
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")

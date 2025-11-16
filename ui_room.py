@@ -11,7 +11,7 @@ class CharacterGUI:
         # new random instance with name as seed, so color and pos are always same
         self.character = character
         self.character_name = character.get_name()
-        rng = random.Random(self.character_name.lower())
+        rng = random.Random(self.character_name.lower() + "abc")
         self.color = rng.choices(range(256), k=3)
 
         offset_from_edges = 20
