@@ -233,10 +233,12 @@ class DetectiveWindow(IWindow):
     def __init__(self, screen: pygame.Surface, game: Game):
         IWindow.__init__(self, screen)
         self.finished = False
+        self.end_game = False
         self.game = game
         self.screen = screen
         self.prompt_input = TextInput(window_pos=(300, 100), size=(680,350), on_enter_function=self.on_prompt_submit)
         self.submit_prompt = Button(window_pos=(500, 500), size=(280,50), text="Submit", on_click_function=self.on_prompt_submit)
+        self.end_game_button = Button(window_pos=(500, 600), size=(280, 50), text="End game", on_click_function=self.on_game_end)
         
         self.user_message = ""
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
@@ -293,10 +295,16 @@ class DetectiveWindow(IWindow):
             self.user_message = message
         input_field.clear()
 
+    def on_game_end(self):
+        self.end_game = True
+
     def draw_all(self):
         mouse_pos = pygame.mouse.get_pos()
         self.prompt_input.draw(self.screen, mouse_pos)
         self.submit_prompt.draw(self.screen, mouse_pos)
+
+        if (self.finished):
+            self.end_game_button.draw(self.screen, mouse_pos)
 
         if (self.active_speech != None):
             self.active_speech.draw(self.screen)
@@ -306,9 +314,10 @@ class DetectiveWindow(IWindow):
     def handle_standard_events(self, event):
         self.prompt_input.handle_event(event, self.prompt_input)
         self.submit_prompt.handle_event(event, self.prompt_input)
+        self.end_game_button.handle_event(event)
 
     def get_next_window(self):
-        if self.finished:
+        if self.end_game:
             new_game = GameWindow(self.screen, "Thanks for playing! Press any key to start over")
             return new_game
         else:
