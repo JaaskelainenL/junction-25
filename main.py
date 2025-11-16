@@ -103,7 +103,8 @@ class GameWindow(IWindow):
             self.add_speech_to_queue("Info", start_msg)
 
         self.target_character = random.choice([c for c in self.game.characters.values() if c.get_name() != PLAYER_NAME])
-        self.add_speech_to_queue("Info", f"Your target is {self.target_character.get_name()}. You must kill this person before {PHASE_LOOKUP[STATES-1]}. Don't get caught. Press any key to continue.")
+        self.add_speech_to_queue("Info", f"Your target is {self.target_character.get_name()}. You must kill this person before {PHASE_LOOKUP[STATES-1]}. \
+                                 Don't get caught. Click areas to select where you will move in the next turn. Click characters to interact with them. (Press any key to continue.)")
 
     def update_people_in_all_rooms(self):
         for room in self.rooms:
@@ -231,6 +232,7 @@ class DetectiveWindow(IWindow):
 
     def __init__(self, screen: pygame.Surface, game: Game):
         IWindow.__init__(self, screen)
+        self.finished = False
         self.game = game
         self.screen = screen
         self.prompt_input = TextInput(window_pos=(300, 100), size=(680,350), on_enter_function=self.on_prompt_submit)
@@ -271,6 +273,7 @@ class DetectiveWindow(IWindow):
             final_message = f"{final_response.suspect} did it. Reasoning: {final_response.explanation}"
             callback(final_message, f"{detective_char.get_name()} solution")
             self.is_waiting = False
+            self.finished = True
         thread = threading.Thread(target=worker)
         thread.daemon = True
         thread.start()
@@ -303,6 +306,13 @@ class DetectiveWindow(IWindow):
     def handle_standard_events(self, event):
         self.prompt_input.handle_event(event, self.prompt_input)
         self.submit_prompt.handle_event(event, self.prompt_input)
+
+    def get_next_window(self):
+        if self.finished:
+            new_game = GameWindow(self.screen, "Thanks for playing! Press any key to start over")
+            return new_game
+        else:
+            return None
 
 # ================ MAIN FUNC ==================
 pygame.init()
