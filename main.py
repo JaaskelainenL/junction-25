@@ -230,14 +230,14 @@ class DetectiveWindow(IWindow):
     def get_detective_async(self, callback):
         def worker():
             self.is_waiting = True # lock mutex
-            detective = DetectiveConversation(None, ", ".join(self.game.killed_people()))
+            detective = DetectiveConversation(None, " and ".join(self.game.killed_people()))
             detective_char = Character("Detective")
             suspects = self.game.alive_people()
             random.shuffle(suspects)
             for suspect in suspects:
                 sus_conversation = Conversation(detective_char, suspect, STATES)
                 sus_conversation.send_message(f"""{detective.victim} has been killed by someone in this village. 
-                                              A detective has come to who did it and will interrogate each town member. 
+                                              A detective has come to find out who did it and will interrogate each town member. 
                                               Now it's your turn to answer the questions he asks you.""")
                 question = detective.change_character(suspect)
                 while detective.question_limit >= 0 and "i am done here" not in question.text.lower():
