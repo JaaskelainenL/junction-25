@@ -224,7 +224,7 @@ class DetectiveWindow(IWindow):
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
 
         self.get_detective_async(
-            callback=lambda response, person: self.add_speech_to_queue(person, response.text)
+            callback=lambda response, person: self.add_speech_to_queue(person, response)
         )
 
     def get_detective_async(self, callback):
@@ -240,15 +240,14 @@ class DetectiveWindow(IWindow):
                                               A detective has come to who did it and will interrogate each town member. 
                                               Now it's your turn to answer the questions he asks you.""")
                 question = detective.change_character(suspect)
-                while detective.question_limit >= 0 and not question.text.startswith("ok, i am done here"):
-                    callback(question, f"{detective_char.get_name()} question #{detective.question_limit}")
+                while detective.question_limit >= 0 and "i am done here" not in question.text.lower():
+                    callback(question.text, f"{detective_char.get_name()} question #{detective.question_limit}")
                     response = sus_conversation.send_message(question.text)
-                    callback(response, f"{suspect.get_name()}")
+                    callback(response.text, f"{suspect.get_name()}")
                     question = detective.send_message(response.text)
             final_response = detective.end_conversation()
             final_message = f"{final_response.suspect} did it. Reasoning: {final_response.explanation}"
-            #callback(final_message, f"{detective_char.get_name()} solution")
-            print(final_message)
+            callback(final_message, f"{detective_char.get_name()} solution")
             self.is_waiting = False
         thread = threading.Thread(target=worker)
         thread.start()
