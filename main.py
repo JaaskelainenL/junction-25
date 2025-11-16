@@ -58,6 +58,7 @@ class IWindow:
             callback(response)
             self.is_waiting = False
         thread = threading.Thread(target=worker)
+        thread.daemon = True
         thread.start()
 
     def main_loop(self):
@@ -259,13 +260,16 @@ class DetectiveWindow(IWindow):
             callback(final_message, f"{detective_char.get_name()} solution")
             self.is_waiting = False
         thread = threading.Thread(target=worker)
+        thread.daemon = True
         thread.start()
 
     def wait_for_user_input(self) -> str:
+        self.is_waiting = False
         while not self.user_message:
             sleep(0.2)
         to_be_returned = self.user_message
         self.user_message = ""
+        self.is_waiting = True
         return to_be_returned
 
     def on_prompt_submit(self, input_field: TextInput):
