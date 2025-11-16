@@ -1,6 +1,6 @@
 import pygame
 import random
-from math import sqrt
+from math import sqrt, pi, cos, sin
 from game import Character, PLAYER_NAME
 from ui_textarea import TextArea
 
@@ -14,10 +14,12 @@ class CharacterGUI:
         rng = random.Random(self.character_name.lower() + "abc")
         self.color = rng.choices(range(256), k=3)
 
-        offset_from_edges = 20
-        self.local_pos = (rng.random(), rng.random())
-        self.screen_pos = ((self.local_pos[0] * (room_size[0] - 2 * offset_from_edges)) + room_window_pos[0] + offset_from_edges,
-                           (self.local_pos[1] * (room_size[1] - 2 * offset_from_edges)) + room_window_pos[1] + offset_from_edges)
+        center = (room_size[0] / 2, room_size[1] / 2)
+        radius = min(room_size) / 2 - 50
+        angle = (ord(self.character_name[0]) * 0.25) * 2 * pi
+
+        self.local_pos = (center[0] + cos(angle) * radius, center[1] + sin(angle) * radius)
+        self.screen_pos = (self.local_pos[0] + room_window_pos[0], self.local_pos[1] + room_window_pos[1])
         self.radius = 20
 
     def draw(self, screen: pygame.Surface):
