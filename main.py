@@ -2,6 +2,7 @@ import pygame
 import random
 import sys
 import threading
+from time import sleep
 from typing import Self
 from queue import Queue
 from game import Game, PLAYER_NAME, STATES, Character
@@ -221,6 +222,8 @@ class DetectiveWindow(IWindow):
         self.screen = screen
         self.prompt_input = TextInput(window_pos=(200, 100), size=(500,350), on_enter_function=self.on_prompt_submit)
         self.submit_prompt = Button(window_pos=(400, 500), size=(100,50), text="Submit", on_click_function=self.on_prompt_submit)
+        
+        self.user_message = ""
         self.add_speech_to_queue(f"It's {self.game.get_time()}", "Times up!")
 
         self.get_detective_async(
@@ -242,9 +245,15 @@ class DetectiveWindow(IWindow):
                 question = detective.change_character(suspect)
                 while detective.question_limit >= 0 and "i am done here" not in question.text.lower():
                     callback(question.text, f"{detective_char.get_name()} question #{detective.question_limit}")
-                    response = sus_conversation.send_message(question.text)
-                    callback(response.text, f"{suspect.get_name()}")
-                    question = detective.send_message(response.text)
+                    response_text = ""
+                    if suspect.get_name() == PLAYER_NAME:
+                        response_text = self.wait_for_user_input()
+                    else:
+                        response = sus_conversation.send_message(question.text)
+                        response_text = response.text
+                    callback(response_text, f"{suspect.get_name()}")
+                    question = detective.send_message(response_text)
+
             final_response = detective.end_conversation()
             final_message = f"{final_response.suspect} did it. Reasoning: {final_response.explanation}"
             callback(final_message, f"{detective_char.get_name()} solution")
@@ -252,15 +261,17 @@ class DetectiveWindow(IWindow):
         thread = threading.Thread(target=worker)
         thread.start()
 
+    def wait_for_user_input(self) -> str:
+        while not self.user_message:
+            sleep(0.2)
+        to_be_returned = self.user_message
+        self.user_message = ""
+        return to_be_returned
+
     def on_prompt_submit(self, input_field: TextInput):
         message = input_field.get_text()
-        
-        self.add_speech_to_queue(PLAYER_NAME, message)
-        #self.get_llm_response_async(
-        #    self.conversations[talking_to],
-        #    message,
-        #    callback=lambda response: self.add_speech_to_queue(talking_to, response.text)
-        #)
+        if message:
+            self.user_message = message
         input_field.clear()
 
     def draw_all(self):
